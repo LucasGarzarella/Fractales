@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+
+<html>
+
+  <head>
+    <meta charset="utf-8">
+    <title>Fractales (Degradé)</title>
+    <link rel="stylesheet" href="./style.css" type="text/css" charset="utf-8">     
+  </head>
+
+  <h1>Relación entre el <a href="https://es.wikipedia.org/wiki/Conjunto_de_Mandelbrot" target="_blank">conjunto de Mandelbrot</a> y los <a href="https://es.wikipedia.org/wiki/Conjunto_de_Julia" target="_blank">conjuntos de Julia</a></h1>
+
+  <p>Poniendo el mouse arriba del primer dibujo (El conjunto de Mandelbrot) se obtendran las coordenadas del mouse y se dibujará el Conjunto de Julia correspondiente a esos valores</p>
+
+  <body onload="setUp();"> 
+    <!-- Creo el area donde voy a dibujar los fractales -->
+    <canvas id="Brot" width="500" height="500"></canvas>
+    <canvas id="Julia" width="500" height="500"></canvas>
+    <!-- Esto lo dejo vacío y mas adelante lo reescribo -->
+    <h2 id="Coordenadas">Valores de Julia = 1.912+ (0.952i)</h2>
+
+    <!-- Sliders para manejar colores -->
+    <h2>Colores</h2>
+     <p><input id="sliderR" type="range" min="0" max="10" value="5"> Rojo: <span id="valueR"></span></p>
+     <p><input id="sliderG" type="range" min="0" max="10" value="5"> Verde: <span id="valueG"></span></p>
+     <p><input id="sliderB" type="range" min="0" max="10" value="5"> Azul: <span id="valueB"></span></p>
+
+    <p>Al cambiar los colores se observa el resultado en el conjunto de Mandelbrot.<br>
+       El conjunto de Julia se actualizará con esos colores repitiendo el proceso inicial.</p>
+
+    <a href="./Colorful.html">Mas Colorido</a>
+
+    <script src="./script.js"></script>
+
+    <script>
+        
+        function draw() {
+          if (canvas.getContext) {
+            // Defino que el canvas es un área 2d y la recuadro
+            var ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, width, height);
+              // "recorro" los valores de x e y (las coordenadas del canvas) uno por uno y a cada valor le aplico fractal()
+              for(var x = 0 ; x<width ; x++){
+                  for(var y = 0 ; y<height ; y++){
+                    var iterations = fractal(x,y)
+                      
+                      // Si fractal() se pasó de mi limite superior en menos de 100 iteraciones, le doy un color dependiendo de cuantas iteraciones le tomó pasarse de ese valor y del valor del slider rgb
+                      if(iterations < 100) {
+                          ctx.fillStyle = `rgb(${sliderR.value*(iterations)},
+                          ${sliderG.value*(iterations)},
+                          ${sliderB.value*(iterations)})`;
+                          ctx.fillRect(x, y, 1, 1);
+                      }
+                      // Si llegó a las 100 iteraciones sin "explotar" lo coloreo de negro
+                      else {
+                        ctx.fillStyle = `rgb(0255,255,255)`
+                        ctx.fillRect(x, y, 1, 1);
+                      }
+                     
+                  }
+              }
+          }
+        }
+        
+        function fractal(xcanvas,ycanvas) {
+            // Transformo las coordenadas del canvas (0-500) en los valores que necesito (-2, 2)
+            var R0 = (xcanvas - xOffset) / scale ;
+            var I0 = (ycanvas - yOffset) / scale ;
+            // Tomo los valores iniciales de x e y ,y los almaceno en una nueva variable, la cual cambia con las iteraciones
+            var R = R0;
+            var I = I0;
+            var n = 0;
+            while (n<100) {
+            // Esto es un desarrollo de la función "F(a+bi) = (a+bi)² + C" donde C es a+bi inicial
+            var real = (R*R)-(I*I);
+            var imag = (2*R*I);
+            // Acá se almacenan los valores del resultado en las variables que se están computando, sumandole el "C" en cada paso
+            R=real+R0;
+            I=imag+I0;
+            // Si en algún momento de la iteración el valor absoluto de x o y excede "2" ese punto explota hasta infinito, por lo que termino el loop
+            if (Math.abs(R)>2 || Math.abs(I)>2) {
+              break
+            }
+            n++;
+          }
+          // Si llegó a las 100 iteraciones sin explotar este valor es 100, si no este valor es cuantas iteraciones le tomó "explotar" (pasarse de abs<2)
+          return (n)
+        }     
+        
+        // De acá en adelante se repite casi el mismo código, con un par de cambios
+        function juliaDraw(eventData){
+          //Estas son las coordenadas aproximadas donde está el mouse dentro del canvas
+          var xJulia= (eventData.offsetX / 125) - 2
+          var yJulia = -((eventData.offsetY / 125) -2)
+          //con esto escribo las coordenadas abajo de los canvas
+          document.getElementById("Coordenadas").innerHTML = ("Valores de Julia = " + (xJulia.toFixed(3)) + "+ (" + (yJulia.toFixed(3)) + "i)")
+          canvas2 = document.getElementById('Julia');
+          height2 = canvas2.getAttribute("height");
+          width2 = canvas2.getAttribute("width");
+          scale2 = width2*0.3;
+          xOffset2 = width2*0.5;
+          yOffset2 = height2*0.5;
+                    
+          
+          draw2(xJulia,yJulia);
+        }
+        function draw2(xJ,yJ) {
+            if (canvas2.getContext) {
+            var ctx2 = canvas2.getContext('2d');
+            ctx2.clearRect(0, 0, width2, height2);
+                for(var x2 = 0 ; x2<width ; x2++){
+                    for(var y2 = 0 ; y2<height2 ; y2++){
+                    var iterations2 = fractal2(x2,y2,xJ,yJ)
+                        
+                        if(iterations2 < 50) {
+                            ctx2.fillStyle = `rgb(${0 + sliderR.value *(iterations2)},
+                            ${0 + sliderG.value *(iterations2)},
+                            ${0 + sliderB.value *(iterations2)})`;
+                            ctx2.fillRect(x2, y2, 1, 1);
+                        }
+                        else {
+                        ctx2.fillStyle = `rgb(255,255,255)`
+                        ctx2.fillRect(x2, y2, 1, 1);
+                        }
+                    
+                    }
+                }
+            }
+        }
+        function fractal2(xcanvas2, ycanvas2, xC, yC) {
+            var R02 = (xcanvas2 - xOffset2) / scale2;
+            var I02 = (ycanvas2 - yOffset2) / scale2;
+            // estos son los valores x e y del conjunto de mandelbrot (transformados a la escala de -2 a 2) en donde esta el mouse
+            var CR = xC;
+            var CI = yC;
+            var R2 = R02;
+            var I2 = I02;
+            var n2 = 0;
+            while (n2<50) {
+            var real2 = (R2*R2)-(I2*I2);
+            var imag2 = (2*R2*I2);
+            // En vez de sumarle el "a+bi" inicial, en cada iteración se le suma el punto en donde esta el mouse (Z0)
+            R2=real2+xC;
+            I2=imag2+yC;
+            if (Math.abs(R2)>2 || Math.abs(I2)>2) {
+              break
+            }
+            n2++;
+          }
+          return (n2)
+        }   </script>
+  
+</body></html>

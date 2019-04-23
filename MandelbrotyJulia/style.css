@@ -1,0 +1,14 @@
+canvas { border: 1px solid black; }
+
+a:link {
+    text-decoration: none;
+  }
+
+  a:visited {
+    text-decoration: none;
+    color: blue
+  }
+
+  a:hover {
+    text-decoration: underline;
+  }
